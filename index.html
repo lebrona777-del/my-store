@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101010">
+<title>MY STORE — Online Shop</title>
+<style>
+:root{--bg:#0b0b0d;--panel:#151518;--muted:#aaa;--red:#e53935;--white:#fff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--white);font-family:Arial,sans-serif}
+header{position:sticky;top:0;z-index:20;background:#101012ee;backdrop-filter:blur(12px);border-bottom:1px solid #29292d}
+.nav{max-width:1200px;margin:auto;padding:16px 5%;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.logo{font-size:25px;font-weight:900;letter-spacing:2px}.logo span{color:var(--red)}
+.navlinks{display:flex;gap:22px}.navlinks a{color:#ddd;text-decoration:none;font-size:14px}
+.cart-btn,.primary{border:0;background:var(--red);color:white;padding:12px 17px;border-radius:9px;font-weight:bold;cursor:pointer}
+.cart-btn{white-space:nowrap}.cart-count{background:white;color:#111;border-radius:20px;padding:2px 7px;margin-left:5px}
+.hero{max-width:1200px;margin:25px auto 0;padding:0 5%}
+.hero-box{min-height:390px;border-radius:22px;overflow:hidden;display:flex;align-items:center;padding:clamp(25px,6vw,70px);background:linear-gradient(90deg,rgba(0,0,0,.92),rgba(0,0,0,.55),rgba(0,0,0,.15)),url('https://images.unsplash.com/photo- shopping-bags?auto=format&fit=crop&w=1600&q=85') center/cover;background-color:#222}
+.hero-box{background-image:linear-gradient(90deg,rgba(0,0,0,.92),rgba(0,0,0,.55),rgba(0,0,0,.2)),url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=85')}
+.hero-copy{max-width:560px}.eyebrow{color:#ff7773;font-weight:bold;letter-spacing:3px;font-size:12px}.hero h1{font-size:clamp(38px,7vw,70px);line-height:1.02;margin:15px 0}.hero p{color:#ddd;line-height:1.6;max-width:430px}.hero .primary{display:inline-block;text-decoration:none;margin-top:12px;padding:14px 23px}
+.section{max-width:1200px;margin:55px auto;padding:0 5%}.section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:20px}.section h2{font-size:28px;margin:0}.muted{color:var(--muted);font-size:14px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.search{flex:1;min-width:190px;background:#17171b;border:1px solid #36363b;border-radius:9px;color:white;padding:13px 15px;font-size:15px}
+.categories{display:flex;gap:8px;flex-wrap:wrap}.cat{background:#1b1b20;border:1px solid #38383e;color:#eee;border-radius:30px;padding:10px 15px;cursor:pointer}.cat.active{background:var(--red);border-color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:17px}.product{background:var(--panel);border:1px solid #28282d;border-radius:14px;overflow:hidden}.product img{width:100%;height:230px;object-fit:cover;display:block;background:#222}.product-info{padding:14px}.product h3{font-size:16px;margin:0 0 8px}.price-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.price{font-weight:bold;font-size:18px}.add{border:0;background:#29292f;color:white;border-radius:8px;padding:10px 12px;cursor:pointer}.add:hover{background:var(--red)}
+footer{border-top:1px solid #29292d;margin-top:60px;padding:30px 5%;text-align:center;color:#999}
+.overlay{position:fixed;inset:0;background:#0009;z-index:30;display:none}.overlay.show{display:block}.cart-panel{position:fixed;right:0;top:0;height:100%;width:min(420px,100%);background:#151518;z-index:31;padding:22px;transform:translateX(105%);transition:.25s;overflow:auto}.cart-panel.show{transform:translateX(0)}.cart-top{display:flex;justify-content:space-between;align-items:center}.close{background:#29292f;color:white;border:0;border-radius:8px;padding:9px 12px;font-size:18px}.cart-item{display:flex;gap:12px;border-bottom:1px solid #333;padding:14px 0}.cart-item img{width:70px;height:75px;object-fit:cover;border-radius:8px}.cart-item-info{flex:1}.qty{display:flex;align-items:center;gap:9px;margin-top:8px}.qty button{background:#303036;color:white;border:0;border-radius:5px;padding:5px 9px}.total{display:flex;justify-content:space-between;font-size:20px;font-weight:bold;margin:22px 0}.checkout{width:100%;padding:15px}.empty{text-align:center;color:#aaa;padding:45px 0}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.product img{height:210px}.navlinks{display:none}.hero-box{min-height:340px}}
+@media(max-width:420px){.logo{font-size:21px}.grid{gap:10px}.product img{height:165px}.product-info{padding:10px}.product h3{font-size:14px}.add{padding:9px}.section h2{font-size:23px}}
+</style>
+</head>
+<body>
+<header><div class="nav"><div class="logo">MY<span>STORE</span></div><nav class="navlinks"><a href="#home">მთავარი</a><a href="#shop">კატალოგი</a><a href="#footer">კონტაქტი</a></nav><button class="cart-btn" onclick="openCart()">🛒 კალათა <span class="cart-count" id="cartCount">0</span></button></div></header>
+<main id="home">
+<section class="hero"><div class="hero-box"><div class="hero-copy"><div class="eyebrow">NEW COLLECTION</div><h1>შენი სტილი.<br>შენი არჩევანი.</h1><p>აღმოაჩინე ტანსაცმელი, ფეხსაცმელი და აქსესუარები ერთ სივრცეში. შეარჩიე საყვარელი ნივთები და დაამატე კალათაში.</p><a class="primary" href="#shop">შეიძინე ახლა</a></div></div></section>
+<section class="section" id="shop"><div class="section-head"><div><div class="eyebrow">MY STORE COLLECTION</div><h2>აღმოაჩინე პროდუქტები</h2></div><div class="muted" id="resultCount"></div></div>
+<div class="tools"><input class="search" id="search" placeholder="🔎 მოძებნე პროდუქტი..." oninput="renderProducts()"></div>
+<div class="categories" id="categories"><button class="cat active" onclick="setCategory('ყველა',this)">ყველა</button><button class="cat" onclick="setCategory('ქალის ტანსაცმელი',this)">ქალის ტანსაცმელი</button><button class="cat" onclick="setCategory('მამაკაცის ტანსაცმელი',this)">მამაკაცის ტანსაცმელი</button><button class="cat" onclick="setCategory('ფეხსაცმელი',this)">ფეხსაცმელი</button><button class="cat" onclick="setCategory('აქსესუარები',this)">აქსესუარები</button></div>
+<div class="grid" id="products"></div></section></main>
+<footer id="footer">© 2026 MY STORE · შენი ონლაინ მაღაზია</footer>
+<div class="overlay" id="overlay" onclick="closeCart()"></div><aside class="cart-panel" id="cartPanel"><div class="cart-top"><h2>🛒 შენი კალათა</h2><button class="close" onclick="closeCart()">✕</button></div><div id="cartItems"></div><div class="total"><span>ჯამი:</span><span id="total">0 ₾</span></div><button class="primary checkout" onclick="checkout()">შეკვეთის გაგრძელება</button><p class="muted">შეკვეთის მიღებისა და გადახდის მეთოდები დაემატება შემდეგ ეტაპზე.</p></aside>
+<script>
+const products=[
+{id:1,name:'ქალის ყოველდღიური ზედა',cat:'ქალის ტანსაცმელი',price:49,image:'https://images.unsplash.com/photo-1551163943-3f6a855d1153?auto=format&fit=crop&w=700&q=80'},
+{id:2,name:'მამაკაცის კეჟუალ მაისური',cat:'მამაკაცის ტანსაცმელი',price:39,image:'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=700&q=80'},
+{id:3,name:'სპორტული ფეხსაცმელი',cat:'ფეხსაცმელი',price:129,image:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=80'},
+{id:4,name:'ქალის ჩანთა',cat:'აქსესუარები',price:89,image:'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=700&q=80'},
+{id:5,name:'ქალის კლასიკური კაბა',cat:'ქალის ტანსაცმელი',price:99,image:'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=700&q=80'},
+{id:6,name:'მამაკაცის ქურთუკი',cat:'მამაკაცის ტანსაცმელი',price:159,image:'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=700&q=80'},
+{id:7,name:'თეთრი ყოველდღიური კედები',cat:'ფეხსაცმელი',price:109,image:'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=700&q=80'},
+{id:8,name:'მზის სათვალე',cat:'აქსესუარები',price:45,image:'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=700&q=80'}
+];
+let category='ყველა',cart=JSON.parse(localStorage.getItem('mystore-cart')||'[]');
+function money(n){return n.toLocaleString('ka-GE')+' ₾'}
+function renderProducts(){let q=document.getElementById('search').value.toLowerCase();let list=products.filter(p=>(category==='ყველა'||p.cat===category)&&(p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)));document.getElementById('resultCount').textContent=list.length+' პროდუქტი';document.getElementById('products').innerHTML=list.map(p=>`<article class="product"><img src="${p.image}" alt="${p.name}" loading="lazy"><div class="product-info"><div class="muted">${p.cat}</div><h3>${p.name}</h3><div class="price-row"><span class="price">${money(p.price)}</span><button class="add" onclick="addToCart(${p.id})">+ კალათაში</button></div></div></article>`).join('')||'<p class="muted">პროდუქტი ვერ მოიძებნა.</p>'}
+function setCategory(c,btn){category=c;document.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderProducts()}
+function saveCart(){localStorage.setItem('mystore-cart',JSON.stringify(cart));renderCart()}
+function addToCart(id){let item=cart.find(x=>x.id===id);if(item)item.qty++;else cart.push({id,qty:1});saveCart();openCart()}
+function changeQty(id,delta){let item=cart.find(x=>x.id===id);if(!item)return;item.qty+=delta;if(item.qty<=0)cart=cart.filter(x=>x.id!==id);saveCart()}
+function renderCart(){document.getElementById('cartCount').textContent=cart.reduce((s,x)=>s+x.qty,0);let el=document.getElementById('cartItems');if(!cart.length){el.innerHTML='<div class="empty">კალათა ჯერ ცარიელია 🛍️</div>';document.getElementById('total').textContent='0 ₾';return}el.innerHTML=cart.map(x=>{let p=products.find(p=>p.id===x.id);return `<div class="cart-item"><img src="${p.image}" alt=""><div class="cart-item-info"><b>${p.name}</b><div>${money(p.price)}</div><div class="qty"><button onclick="changeQty(${p.id},-1)">−</button><span>${x.qty}</span><button onclick="changeQty(${p.id},1)">+</button><button onclick="changeQty(${p.id},-${x.qty})">წაშლა</button></div></div></div>`}).join('');document.getElementById('total').textContent=money(cart.reduce((s,x)=>s+products.find(p=>p.id===x.id).price*x.qty,0))}
+function openCart(){document.getElementById('overlay').classList.add('show');document.getElementById('cartPanel').classList.add('show')}
+function closeCart(){document.getElementById('overlay').classList.remove('show');document.getElementById('cartPanel').classList.remove('show')}
+function checkout(){if(!cart.length){alert('კალათა ცარიელია. ჯერ დაამატე პროდუქტი.');return}alert('კალათა მზად არის! შეკვეთის გაფორმებისა და გადახდის სისტემას შემდეგ ეტაპზე დავაკავშირებთ.')}
+renderProducts();renderCart();
+</script></body></html>
