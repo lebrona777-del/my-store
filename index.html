@@ -1,0 +1,500 @@
+
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>MY STORE — ონლაინ მაღაზია</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101010;color:#fff;font-family:Arial,sans-serif}
+header{background:#181818;border-bottom:1px solid #333;position:sticky;top:0;z-index:5}
+.top{max-width:1200px;margin:auto;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{font-size:25px;font-weight:900;color:white;text-decoration:none;white-space:nowrap}
+.logo span{color:#ed2638}
+.search{flex:1;min-width:120px}
+input,textarea,select{width:100%;padding:13px;background:#292929;border:1px solid #444;border-radius:9px;color:white;font:inherit}
+button{cursor:pointer}
+.cart-button,.account-button,.admin-button,.add,.checkout-button{background:#e32636;color:white;border:0;border-radius:9px;padding:12px 14px;font-weight:bold;text-decoration:none;display:inline-block}
+.account-button{background:#333}
+.admin-button{background:#444}
+.hero{max-width:1168px;margin:25px auto;padding:40px 25px;border-radius:16px;background:linear-gradient(110deg,#40151b,#191919)}
+.hero h1{font-size:clamp(28px,5vw,45px);margin:0 0 12px}
+.hero p{color:#ddd;line-height:1.6;margin:0}
+main{max-width:1200px;margin:auto;padding:0 16px 45px}
+.categories{display:flex;gap:9px;overflow-x:auto;padding:15px 0 22px}
+.category{white-space:nowrap;background:#292929;color:white;border:1px solid #444;border-radius:25px;padding:10px 16px}
+.category.active{background:#e32636;border-color:#e32636}
+.heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.heading h2{margin:0}
+#status{font-size:13px;color:#aaa}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px}
+.card{background:#1d1d1d;border:1px solid #333;border-radius:13px;overflow:hidden;display:flex;flex-direction:column}
+.photo,.no-photo{width:100%;aspect-ratio:1;object-fit:cover;background:#292929}
+.no-photo{display:grid;place-items:center;color:#999}
+.details{padding:14px;display:flex;flex-direction:column;gap:9px;flex:1}
+.details h3{margin:0;font-size:17px;overflow-wrap:anywhere}
+.category-name{font-size:12px;color:#aaa}
+.description{font-size:13px;color:#aaa;line-height:1.5;min-height:30px}
+.price-row{display:flex;justify-content:space-between;align-items:center;gap:7px;margin-top:auto}
+.price{font-size:19px;font-weight:bold}
+.add{padding:10px;font-size:13px}
+.empty{grid-column:1/-1;text-align:center;padding:35px 15px;background:#1c1c1c;border-radius:12px;color:#aaa}
+.overlay{display:none;position:fixed;inset:0;background:#0009;z-index:8}
+.overlay.show{display:block}
+.drawer{position:fixed;right:0;top:0;height:100%;width:min(460px,100%);background:#191919;z-index:9;padding:20px;display:flex;flex-direction:column;transform:translateX(105%);transition:.25s;overflow:auto}
+.drawer.open{transform:translateX(0)}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #444;padding-bottom:15px}
+.drawer-head h2{margin:0}
+.close,.qty button,.remove{background:#333;color:white;border:0;border-radius:7px;padding:9px 12px}
+.cart-items{overflow:auto;flex:1;padding:12px 0}
+.cart-item{display:grid;grid-template-columns:60px 1fr auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #333}
+.cart-item img{width:60px;height:60px;object-fit:cover;border-radius:7px;background:#333}
+.cart-item strong{display:block;font-size:14px}
+.cart-item small{color:#aaa}
+.qty{display:flex;gap:8px;align-items:center;margin-top:7px}
+.remove{background:#70212a}
+.total{display:flex;justify-content:space-between;border-top:1px solid #444;padding:15px 0;font-size:20px;font-weight:bold}
+.checkout-form{display:grid;gap:12px;padding-top:12px}
+.checkout-form h3{margin:5px 0}
+.checkout-form label{font-size:13px;color:#ccc}
+.checkout-button{width:100%;padding:15px;font-size:16px}
+.checkout-button:disabled{opacity:.5;cursor:not-allowed}
+.note{font-size:12px;color:#aaa;line-height:1.5}
+#orderMessage{font-size:14px;line-height:1.5}
+footer{text-align:center;color:#777;padding:25px;border-top:1px solid #333}
+@media(max-width:900px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){
+ .top{gap:8px}
+ .logo{font-size:22px}
+ .search{order:5;flex-basis:100%}
+ .cart-button{margin-left:auto}
+ .account-button,.admin-button,.cart-button{font-size:12px;padding:10px}
+ .hero{margin:15px;padding:27px 19px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .details{padding:10px}
+ .details h3{font-size:15px}
+ .price{font-size:16px}
+ .add{font-size:12px;padding:9px}
+}
+@media(max-width:350px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="top">
+<a class="logo" href="./">MY <span>STORE</span></a>
+
+<a class="account-button" href="./account.html">👤 ჩემი ანგარიში</a>
+<a class="admin-button" href="./admin.html">ადმინი</a>
+
+<div class="search">
+<input id="search" type="search" placeholder="მოძებნე პროდუქტი...">
+</div>
+
+<button class="cart-button" id="openCart">
+🛒 კალათა (<span id="cartCount">0</span>)
+</button>
+</div>
+</header>
+
+<section class="hero">
+<h1>აღმოაჩინე შენი საყვარელი ნივთები</h1>
+<p>MY STORE — შეარჩიე სასურველი პროდუქტი მარტივად.</p>
+</section>
+
+<main>
+<nav class="categories" id="categories">
+<button class="category active" data-category="ყველა">ყველა</button>
+<button class="category" data-category="ტანსაცმელი">ტანსაცმელი</button>
+<button class="category" data-category="ფეხსაცმელი">ფეხსაცმელი</button>
+<button class="category" data-category="ელექტრონიკა">ელექტრონიკა</button>
+<button class="category" data-category="აქსესუარები">აქსესუარები</button>
+<button class="category" data-category="სხვა">სხვა</button>
+</nav>
+
+<div class="heading">
+<h2>პროდუქტები</h2>
+<span id="status">იტვირთება...</span>
+</div>
+
+<section class="grid" id="products"></section>
+</main>
+
+<footer>© <span id="year"></span> MY STORE</footer>
+
+<div class="overlay" id="overlay"></div>
+
+<aside class="drawer" id="drawer">
+<div class="drawer-head">
+<h2>🛒 ჩემი კალათა</h2>
+<button class="close" id="closeCart">✕</button>
+</div>
+
+<div class="cart-items" id="cartItems"></div>
+
+<div class="total">
+<span>ჯამი</span>
+<span id="cartTotal">0.00 ₾</span>
+</div>
+
+<form class="checkout-form" id="checkoutForm">
+<h3>შეკვეთის გაფორმება</h3>
+
+<label>
+სახელი და გვარი
+<input id="customerName" required maxlength="100" placeholder="შეიყვანე სახელი და გვარი">
+</label>
+
+<label>
+ტელეფონის ნომერი
+<input id="customerPhone" required type="tel" maxlength="30" placeholder="ტელეფონის ნომერი">
+</label>
+
+<label>
+მისამართი
+<textarea id="deliveryAddress" required maxlength="500" rows="2" placeholder="მიუთითე მიტანის მისამართი"></textarea>
+</label>
+
+<label>
+გადახდის მეთოდი
+<select id="paymentMethod">
+<option value="cash">ნაღდი ანგარიშსწორება კურიერთან</option>
+</select>
+</label>
+
+<p class="note">
+ბარათით გადახდა და Apple Pay დაემატება გადახდის პროვაიდერის უსაფრთხო სისტემის დაკავშირების შემდეგ.
+</p>
+
+<button class="checkout-button" id="submitOrder" type="submit">
+შეკვეთის დადასტურება
+</button>
+
+<div id="orderMessage" aria-live="polite"></div>
+</form>
+</aside>
+
+<script type="module">
+import { createClient } from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SUPABASE_URL = "https://zlpotkepmucwzhtndycz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qFNKu2mnmjkTIBWs8X0rzg_bbHtkb4O";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+
+let products = [];
+let activeCategory = "ყველა";
+let cart = {};
+
+try {
+  cart = JSON.parse(localStorage.getItem("my-store-cart") || "{}") || {};
+} catch {
+  cart = {};
+}
+
+$("year").textContent = new Date().getFullYear();
+
+function money(value) {
+  return Number(value || 0).toFixed(2) + " ₾";
+}
+
+function saveCart() {
+  localStorage.setItem("my-store-cart", JSON.stringify(cart));
+  renderCart();
+}
+
+function addToCart(id) {
+  cart[id] = (cart[id] || 0) + 1;
+  saveCart();
+}
+
+function renderProducts() {
+  const search = $("search").value.trim().toLocaleLowerCase();
+
+  const filtered = products.filter(p => {
+    const categoryMatch =
+      activeCategory === "ყველა" || p.category === activeCategory;
+
+    const searchMatch =
+      (p.title || "").toLocaleLowerCase().includes(search) ||
+      (p.description || "").toLocaleLowerCase().includes(search);
+
+    return categoryMatch && searchMatch;
+  });
+
+  $("products").replaceChildren();
+  $("status").textContent = filtered.length + " პროდუქტი";
+
+  if (!filtered.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = products.length
+      ? "პროდუქტი ვერ მოიძებნა."
+      : "პროდუქტები ჯერ არ არის დამატებული.";
+    $("products").append(empty);
+    return;
+  }
+
+  filtered.forEach(p => {
+    const card = document.createElement("article");
+    card.className = "card";
+
+    if (p.image_url) {
+      const img = document.createElement("img");
+      img.className = "photo";
+      img.src = p.image_url;
+      img.alt = p.title || "პროდუქტი";
+      img.loading = "lazy";
+      card.append(img);
+    } else {
+      const placeholder = document.createElement("div");
+      placeholder.className = "no-photo";
+      placeholder.textContent = "ფოტო არ არის";
+      card.append(placeholder);
+    }
+
+    const details = document.createElement("div");
+    details.className = "details";
+
+    const title = document.createElement("h3");
+    title.textContent = p.title || "პროდუქტი";
+
+    const category = document.createElement("span");
+    category.className = "category-name";
+    category.textContent = p.category || "სხვა";
+
+    const description = document.createElement("div");
+    description.className = "description";
+    description.textContent = p.description || "";
+
+    const row = document.createElement("div");
+    row.className = "price-row";
+
+    const price = document.createElement("span");
+    price.className = "price";
+    price.textContent = money(p.price);
+
+    const add = document.createElement("button");
+    add.className = "add";
+    add.textContent = "კალათაში +";
+    add.addEventListener("click", () => addToCart(p.id));
+
+    row.append(price, add);
+    details.append(title, category, description, row);
+    card.append(details);
+    $("products").append(card);
+  });
+}
+
+function renderCart() {
+  $("cartItems").replaceChildren();
+
+  const entries = Object.entries(cart).filter(
+    ([id, quantity]) =>
+      Number(quantity) > 0 && products.some(p => String(p.id) === String(id))
+  );
+
+  let count = 0;
+  let total = 0;
+
+  entries.forEach(([id, quantity]) => {
+    const product = products.find(p => String(p.id) === String(id));
+    count += Number(quantity);
+    total += Number(product.price) * Number(quantity);
+
+    const item = document.createElement("div");
+    item.className = "cart-item";
+
+    const img = document.createElement("img");
+    img.src = product.image_url || "";
+    img.alt = product.title || "";
+
+    const info = document.createElement("div");
+
+    const title = document.createElement("strong");
+    title.textContent = product.title;
+
+    const price = document.createElement("small");
+    price.textContent = money(product.price) + " / ცალი";
+
+    const qty = document.createElement("div");
+    qty.className = "qty";
+
+    const minus = document.createElement("button");
+    minus.textContent = "−";
+    minus.addEventListener("click", () => {
+      cart[id]--;
+      if (cart[id] <= 0) delete cart[id];
+      saveCart();
+    });
+
+    const amount = document.createElement("span");
+    amount.textContent = quantity;
+
+    const plus = document.createElement("button");
+    plus.textContent = "+";
+    plus.addEventListener("click", () => {
+      cart[id]++;
+      saveCart();
+    });
+
+    qty.append(minus, amount, plus);
+    info.append(title, price, qty);
+
+    const remove = document.createElement("button");
+    remove.className = "remove";
+    remove.textContent = "წაშლა";
+    remove.addEventListener("click", () => {
+      delete cart[id];
+      saveCart();
+    });
+
+    item.append(img, info, remove);
+    $("cartItems").append(item);
+  });
+
+  if (!entries.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "კალათა ცარიელია.";
+    $("cartItems").append(empty);
+  }
+
+  $("cartCount").textContent = count;
+  $("cartTotal").textContent = money(total);
+  $("submitOrder").disabled = entries.length === 0;
+}
+
+function openCart() {
+  $("drawer").classList.add("open");
+  $("overlay").classList.add("show");
+}
+
+function closeCart() {
+  $("drawer").classList.remove("open");
+  $("overlay").classList.remove("show");
+}
+
+$("openCart").addEventListener("click", openCart);
+$("closeCart").addEventListener("click", closeCart);
+$("overlay").addEventListener("click", closeCart);
+$("search").addEventListener("input", renderProducts);
+
+$("categories").addEventListener("click", event => {
+  const button = event.target.closest("button[data-category]");
+  if (!button) return;
+
+  activeCategory = button.dataset.category;
+
+  document.querySelectorAll(".category").forEach(item => {
+    item.classList.toggle("active", item === button);
+  });
+
+  renderProducts();
+});
+
+async function loadProducts() {
+  $("status").textContent = "იტვირთება...";
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("id,title,category,description,price,image_url")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    $("status").textContent = "შეცდომა";
+    const message = document.createElement("div");
+    message.className = "empty";
+    message.textContent =
+      "პროდუქტები ვერ ჩაიტვირთა. შეამოწმე ინტერნეტი და Supabase-ის პარამეტრები.";
+    $("products").replaceChildren(message);
+    return;
+  }
+
+  products = data || [];
+  renderProducts();
+  renderCart();
+}
+
+$("checkoutForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const entries = Object.entries(cart).filter(
+    ([id, quantity]) =>
+      Number(quantity) > 0 && products.some(p => String(p.id) === String(id))
+  );
+
+  if (!entries.length) {
+    $("orderMessage").textContent = "კალათა ცარიელია.";
+    return;
+  }
+
+  const customerName = $("customerName").value.trim();
+  const customerPhone = $("customerPhone").value.trim();
+  const deliveryAddress = $("deliveryAddress").value.trim();
+
+  if (!customerName || !customerPhone || !deliveryAddress) {
+    $("orderMessage").textContent = "გთხოვ, შეავსე ყველა ველი.";
+    return;
+  }
+
+  const items = entries.map(([id, quantity]) => {
+    const product = products.find(p => String(p.id) === String(id));
+    return {
+      product_id: id,
+      title: product.title,
+      price: Number(product.price),
+      quantity: Number(quantity)
+    };
+  });
+
+  const total = items.reduce(
+    (sum, item) => sum + item.price * item.quantity, 0
+  );
+
+  const button = $("submitOrder");
+  button.disabled = true;
+  button.textContent = "იგზავნება...";
+  $("orderMessage").textContent = "";
+
+  const { error } = await supabase
+    .from("orders")
+    .insert([{
+      customer_name: customerName,
+      customer_phone: customerPhone,
+      delivery_address: deliveryAddress,
+      items,
+      total,
+      payment_method: "cash",
+      payment_status: "pending",
+      order_status: "new"
+    }]);
+
+  button.disabled = false;
+  button.textContent = "შეკვეთის დადასტურება";
+
+  if (error) {
+    console.error(error);
+    $("orderMessage").textContent =
+      "შეკვეთა ვერ გაიგზავნა. გადაამოწმე orders ცხრილის უფლებები Supabase-ში.";
+    return;
+  }
+
+  cart = {};
+  saveCart();
+  $("checkoutForm").reset();
+  $("orderMessage").textContent =
+    "შეკვეთა წარმატებით გაიგზავნა! ანგარიშსწორება მოხდება კურიერთან.";
+});
+
+renderCart();
+loadProducts();
+</script>
+</body>
+</html>
