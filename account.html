@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>MY STORE — მომხმარებლის ანგარიში</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;background:#101010;color:#fff;
+  font-family:Arial,sans-serif;display:flex;align-items:center;
+  justify-content:center;padding:18px
+}
+.card{
+  width:100%;max-width:430px;background:#1b1b1b;
+  border:1px solid #333;border-radius:18px;padding:26px;
+  box-shadow:0 15px 45px #0008
+}
+.logo{text-align:center;font-size:32px;font-weight:900}
+.logo span{color:#e53935}
+.subtitle{text-align:center;color:#aaa;margin:9px 0 25px}
+.tabs{display:flex;gap:9px;margin-bottom:20px}
+.tabs button{
+  flex:1;padding:13px;border:1px solid #444;
+  background:#292929;color:white;border-radius:9px;
+  font-weight:bold;font-size:15px;cursor:pointer
+}
+.tabs button.active{background:#e53935;border-color:#e53935}
+label{display:block;margin:15px 0 7px;color:#ddd;font-size:14px}
+input{
+  width:100%;padding:14px;background:#101010;color:white;
+  border:1px solid #444;border-radius:9px;font-size:16px
+}
+input:focus{outline:1px solid #e53935}
+.main-btn{
+  width:100%;margin-top:22px;padding:15px;border:0;
+  border-radius:9px;background:#e53935;color:white;
+  font-size:16px;font-weight:bold;cursor:pointer
+}
+.main-btn:disabled{opacity:.55;cursor:wait}
+.message{
+  display:none;margin-top:17px;padding:13px;
+  background:#292929;border:1px solid #555;
+  border-radius:9px;font-size:14px;line-height:1.6;
+  overflow-wrap:anywhere
+}
+.message.error{border-color:#e53935}
+.message.success{border-color:#388e3c}
+.links{text-align:center;margin-top:23px;line-height:2}
+a{color:#ff625d;text-decoration:none}
+.hidden{display:none!important}
+.account{text-align:center}
+.account-email{color:#ff625d;overflow-wrap:anywhere;margin:15px 0}
+.small{color:#999;font-size:12px;line-height:1.5;margin-top:13px}
+</style>
+</head>
+
+<body>
+<div class="card">
+
+  <div class="logo">MY <span>STORE</span></div>
+  <div class="subtitle">მომხმარებლის პირადი ანგარიში</div>
+
+  <section id="authArea">
+
+    <div class="tabs">
+      <button type="button" id="loginTab" class="active">შესვლა</button>
+      <button type="button" id="registerTab">რეგისტრაცია</button>
+    </div>
+
+    <form id="authForm">
+      <label for="email">ელფოსტა</label>
+      <input
+        id="email"
+        type="email"
+        placeholder="შეიყვანე ელფოსტა"
+        autocomplete="email"
+        required
+      >
+
+      <label for="password">პაროლი</label>
+      <input
+        id="password"
+        type="password"
+        placeholder="მინიმუმ 8 სიმბოლო"
+        minlength="8"
+        autocomplete="current-password"
+        required
+      >
+
+      <button class="main-btn" id="submitBtn" type="submit">
+        შესვლა
+      </button>
+    </form>
+
+    <p class="small">
+      რეგისტრაციისას გამოიყენე მოქმედი ელფოსტა.
+      შესაძლოა საჭირო გახდეს ელფოსტის დადასტურება.
+    </p>
+  </section>
+
+  <section id="accountArea" class="account hidden">
+    <h2>ჩემი ანგარიში</h2>
+    <p>ანგარიშში შესული ხარ:</p>
+    <div id="userEmail" class="account-email"></div>
+    <button class="main-btn" id="logoutBtn" type="button">
+      ანგარიშიდან გამოსვლა
+    </button>
+  </section>
+
+  <div id="message" class="message" role="status" aria-live="polite"></div>
+
+  <div class="links">
+    <a href="./index.html">← მაღაზიაში დაბრუნება</a>
+    <br>
+    <a href="./admin.html">ადმინისტრატორის გვერდი</a>
+  </div>
+
+</div>
+
+<script type="module">
+import { createClient } from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SUPABASE_URL =
+  "https://zlpotkepmucwzhtndycz.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_qFNKu2mnmjkTIBWs8X0rzg_bbHtkb4O";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const $ = id => document.getElementById(id);
+
+let mode = "login";
+
+function showMessage(text, type = "success") {
+  const box = $("message");
+  box.textContent = text;
+  box.className = "message " + type;
+  box.style.display = "block";
+}
+
+function clearMessage() {
+  $("message").textContent = "";
+  $("message").style.display = "none";
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  clearMessage();
+
+  $("loginTab").classList.toggle("active", mode === "login");
+  $("registerTab").classList.toggle("active", mode === "register");
+
+  $("submitBtn").textContent =
+    mode === "login" ? "შესვლა" : "ანგარიშის შექმნა";
+
+  $("password").autocomplete =
+    mode === "login" ? "current-password" : "new-password";
+}
+
+function showAccount(user) {
+  if (user) {
+    $("authArea").classList.add("hidden");
+    $("accountArea").classList.remove("hidden");
+    $("userEmail").textContent = user.email || "";
+  } else {
+    $("accountArea").classList.add("hidden");
+    $("authArea").classList.remove("hidden");
+  }
+}
+
+$("loginTab").addEventListener("click", () => setMode("login"));
+$("registerTab").addEventListener("click", () => setMode("register"));
+
+$("authForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  clearMessage();
+
+  const email = $("email").value.trim();
+  const password = $("password").value;
+
+  if (!email || !password) {
+    showMessage("გთხოვ, შეავსე ორივე ველი.", "error");
+    return;
+  }
+
+  if (password.length < 8) {
+    showMessage("პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს.", "error");
+    return;
+  }
+
+  const button = $("submitBtn");
+  button.disabled = true;
+  button.textContent = "მიმდინარეობს...";
+
+  try {
+    if (mode === "register") {
+      const redirectUrl = new URL(
+        "./account.html",
+        window.location.href
+      ).href;
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.session && data.user) {
+        showAccount(data.user);
+        showMessage("რეგისტრაცია წარმატებით დასრულდა!");
+      } else {
+        showMessage(
+          "რეგისტრაცია მიღებულია. შეამოწმე ელფოსტა და დაადასტურე ანგარიში. დადასტურების შემდეგ შეძლებ შესვლას."
+        );
+      }
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      showAccount(data.user);
+      showMessage("ანგარიშში წარმატებით შეხვედით!");
+    }
+  } catch (error) {
+    console.error("MY STORE AUTH ERROR:", error);
+
+    let errorText = error.message || "უცნობი შეცდომა.";
+
+    if (errorText.toLowerCase().includes("already registered")) {
+      errorText = "ეს ელფოსტა უკვე რეგისტრირებულია. სცადე შესვლა.";
+    } else if (errorText.toLowerCase().includes("invalid login")) {
+      errorText = "ელფოსტა ან პაროლი არასწორია.";
+    } else if (errorText.toLowerCase().includes("password")) {
+      errorText = "პაროლის მოთხოვნები გადაამოწმე.";
+    }
+
+    showMessage("შეცდომა: " + errorText, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent =
+      mode === "login" ? "შესვლა" : "ანგარიშის შექმნა";
+  }
+});
+
+$("logoutBtn").addEventListener("click", async () => {
+  const button = $("logoutBtn");
+  button.disabled = true;
+
+  try {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) throw error;
+
+    showAccount(null);
+    showMessage("ანგარიშიდან გამოხვედი.");
+  } catch (error) {
+    showMessage(error.message || "გამოსვლა ვერ მოხერხდა.", "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+supabase.auth.onAuthStateChange((event, session) => {
+  showAccount(session?.user || null);
+});
+
+async function checkSession() {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error) throw error;
+
+    showAccount(data.session?.user || null);
+  } catch (error) {
+    showMessage(
+      "ანგარიშის შემოწმება ვერ მოხერხდა: " + error.message,
+      "error"
+    );
+  }
+}
+
+checkSession();
+</script>
+
+</body>
+</html>
