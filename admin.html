@@ -1,0 +1,417 @@
+
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MY STORE — Admin Panel</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101010;color:white;
+ font-family:Arial,sans-serif;padding:18px;
+}
+.container{max-width:850px;margin:auto}
+header{
+ display:flex;justify-content:space-between;
+ align-items:center;flex-wrap:wrap;gap:12px;
+ border-bottom:1px solid #393939;padding-bottom:18px;
+}
+h1{color:#ff3030;margin:0}
+h2{font-size:20px}
+.panel{
+ background:#1c1c1c;border:1px solid #383838;
+ border-radius:14px;padding:20px;margin-top:20px;
+}
+input,textarea,select,button{
+ width:100%;padding:13px;margin-top:12px;
+ border-radius:8px;font-size:15px;
+}
+input,textarea,select{
+ background:#292929;color:white;border:1px solid #555;
+}
+textarea{min-height:90px;resize:vertical}
+button{
+ background:#e32636;color:white;border:0;
+ font-weight:bold;cursor:pointer;
+}
+button:disabled{opacity:.5}
+.logout{width:auto;padding:11px 18px}
+.secondary{background:#444}
+.danger{background:#9e2020}
+.product{
+ display:flex;gap:14px;align-items:center;
+ border-bottom:1px solid #444;padding:15px 0;
+}
+.product img{
+ width:85px;height:85px;object-fit:cover;
+ border-radius:8px;background:#333;
+}
+.product-info{flex:1;min-width:0}
+.product-info p{overflow-wrap:anywhere}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions button{width:auto;padding:9px 13px}
+#login,#dashboard{display:none}
+#message{color:#ff8585;line-height:1.5}
+#status{color:#91e6a0}
+#preview{max-width:130px;max-height:130px;display:none;margin-top:12px;border-radius:8px}
+.empty{text-align:center;color:#aaa;padding:20px}
+@media(max-width:500px){
+ .product{align-items:flex-start}
+ .product img{width:70px;height:70px}
+ .actions{flex-direction:column}
+ .actions button{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+ <h1>MY STORE</h1>
+ <button id="logoutBtn" class="logout" style="display:none">გასვლა</button>
+</header>
+
+<section id="login" class="panel">
+ <h2>ადმინისტრატორის შესვლა</h2>
+ <input id="email" type="email" placeholder="ელფოსტა">
+ <input id="password" type="password" placeholder="პაროლი">
+ <button id="loginBtn">შესვლა</button>
+ <p id="message"></p>
+</section>
+
+<section id="dashboard">
+ <div class="panel">
+  <h2 id="formTitle">➕ ახალი პროდუქტის დამატება</h2>
+
+  <form id="productForm">
+   <input id="title" type="text" placeholder="პროდუქტის სახელი" required>
+
+   <select id="category" required>
+    <option value="">აირჩიე კატეგორია</option>
+    <option value="ტანსაცმელი">ტანსაცმელი</option>
+    <option value="ფეხსაცმელი">ფეხსაცმელი</option>
+    <option value="ელექტრონიკა">ელექტრონიკა</option>
+    <option value="აქსესუარები">აქსესუარები</option>
+    <option value="სხვა">სხვა</option>
+   </select>
+
+   <input id="price" type="number" min="0" step="0.01"
+          placeholder="ფასი (₾)" required>
+
+   <textarea id="description"
+             placeholder="პროდუქტის აღწერა"></textarea>
+
+   <label for="photo">პროდუქტის ფოტო</label>
+   <input id="photo" type="file" accept="image/jpeg,image/png,image/webp">
+   <img id="preview" alt="ფოტოს წინასწარი ნახვა">
+
+   <button id="saveBtn" type="submit">პროდუქტის დამატება</button>
+   <button id="cancelBtn" type="button" class="secondary"
+           style="display:none">გაუქმება</button>
+  </form>
+
+  <p id="status"></p>
+ </div>
+
+ <div class="panel">
+  <h2>📦 პროდუქტები</h2>
+  <div id="productsList" class="empty">იტვირთება...</div>
+ </div>
+</section>
+</div>
+
+<script type="module">
+import { createClient } from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SUPABASE_URL = "https://zlpotkepmucwzhtndycz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qFNKu2mnmjkTIBWs8X0rzg_bbHtkb4O";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const $ = id => document.getElementById(id);
+
+let editingId = null;
+let currentImage = null;
+let busy = false;
+
+function showMessage(text, error = false) {
+  $("status").textContent = text;
+  $("status").style.color = error ? "#ff8585" : "#91e6a0";
+}
+
+function showLogin(text = "") {
+  $("login").style.display = "block";
+  $("dashboard").style.display = "none";
+  $("logoutBtn").style.display = "none";
+  $("message").textContent = text;
+}
+
+async function checkAdmin(user) {
+  const { data, error } = await supabase
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error || !data) {
+    await supabase.auth.signOut();
+    showLogin("ამ ანგარიშს ადმინისტრატორის უფლება არ აქვს.");
+    return false;
+  }
+
+  $("login").style.display = "none";
+  $("dashboard").style.display = "block";
+  $("logoutBtn").style.display = "block";
+
+  await loadProducts();
+  return true;
+}
+
+async function loadProducts() {
+  $("productsList").textContent = "იტვირთება...";
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    $("productsList").textContent = "შეცდომა: " + error.message;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    $("productsList").innerHTML =
+      '<p class="empty">ჯერ პროდუქტი დამატებული არ არის.</p>';
+    return;
+  }
+
+  $("productsList").innerHTML = "";
+
+  data.forEach(product => {
+    const card = document.createElement("div");
+    card.className = "product";
+
+    const img = document.createElement("img");
+    img.alt = product.title;
+    if (product.image_url) img.src = product.image_url;
+
+    const info = document.createElement("div");
+    info.className = "product-info";
+
+    const name = document.createElement("strong");
+    name.textContent = product.title;
+
+    const price = document.createElement("p");
+    price.textContent = Number(product.price).toFixed(2) + " ₾";
+
+    const category = document.createElement("small");
+    category.textContent = product.category;
+
+    info.append(name, price, category);
+
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
+    const edit = document.createElement("button");
+    edit.className = "secondary";
+    edit.textContent = "რედაქტირება";
+    edit.addEventListener("click", () => editProduct(product));
+
+    const del = document.createElement("button");
+    del.className = "danger";
+    del.textContent = "წაშლა";
+    del.addEventListener("click", () => deleteProduct(product));
+
+    actions.append(edit, del);
+    card.append(img, info, actions);
+    $("productsList").append(card);
+  });
+}
+
+function resetForm() {
+  $("productForm").reset();
+  $("preview").style.display = "none";
+  $("preview").src = "";
+  $("formTitle").textContent = "➕ ახალი პროდუქტის დამატება";
+  $("saveBtn").textContent = "პროდუქტის დამატება";
+  $("cancelBtn").style.display = "none";
+  editingId = null;
+  currentImage = null;
+}
+
+function editProduct(product) {
+  editingId = product.id;
+  currentImage = product.image_url;
+
+  $("title").value = product.title;
+  $("category").value = product.category;
+  $("price").value = product.price;
+  $("description").value = product.description || "";
+
+  if (product.image_url) {
+    $("preview").src = product.image_url;
+    $("preview").style.display = "block";
+  } else {
+    $("preview").style.display = "none";
+  }
+
+  $("formTitle").textContent = "✏️ პროდუქტის რედაქტირება";
+  $("saveBtn").textContent = "ცვლილებების შენახვა";
+  $("cancelBtn").style.display = "block";
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+$("photo").addEventListener("change", () => {
+  const file = $("photo").files[0];
+  if (!file) return;
+
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    showMessage("აირჩიე JPG, PNG ან WEBP ფოტო.", true);
+    $("photo").value = "";
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showMessage("ფოტოს ზომა მაქსიმუმ 5 MB უნდა იყოს.", true);
+    $("photo").value = "";
+    return;
+  }
+
+  $("preview").src = URL.createObjectURL(file);
+  $("preview").style.display = "block";
+});
+
+$("productForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (busy) return;
+
+  busy = true;
+  $("saveBtn").disabled = true;
+  showMessage("მიმდინარეობს შენახვა...");
+
+  try {
+    const title = $("title").value.trim();
+    const category = $("category").value;
+    const price = Number($("price").value);
+    const description = $("description").value.trim();
+
+    if (!title || !category || !Number.isFinite(price) || price < 0) {
+      throw new Error("შეამოწმე პროდუქტის მონაცემები.");
+    }
+
+    let imageUrl = currentImage;
+    const file = $("photo").files[0];
+
+    if (file) {
+      const extension = file.type === "image/png" ? "png" :
+                        file.type === "image/webp" ? "webp" : "jpg";
+      const path = crypto.randomUUID() + "." + extension;
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, {
+          contentType: file.type,
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(path);
+
+      imageUrl = urlData.publicUrl;
+    }
+
+    const productData = {
+      title,
+      category,
+      price,
+      description,
+      image_url: imageUrl,
+      updated_at: new Date().toISOString()
+    };
+
+    let result;
+
+    if (editingId) {
+      result = await supabase
+        .from("products")
+        .update(productData)
+        .eq("id", editingId);
+    } else {
+      result = await supabase
+        .from("products")
+        .insert(productData);
+    }
+
+    if (result.error) throw result.error;
+
+    showMessage("პროდუქტი წარმატებით შეინახა!");
+    resetForm();
+    await loadProducts();
+
+  } catch (error) {
+    showMessage("შეცდომა: " + error.message, true);
+  } finally {
+    busy = false;
+    $("saveBtn").disabled = false;
+  }
+});
+
+async function deleteProduct(product) {
+  if (!confirm("ნამდვილად გსურს ამ პროდუქტის წაშლა?")) return;
+
+  const { error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", product.id);
+
+  if (error) {
+    showMessage("წაშლა ვერ მოხერხდა: " + error.message, true);
+    return;
+  }
+
+  showMessage("პროდუქტი წაიშალა.");
+  await loadProducts();
+}
+
+$("cancelBtn").addEventListener("click", resetForm);
+
+$("loginBtn").addEventListener("click", async () => {
+  $("message").textContent = "მიმდინარეობს შესვლა...";
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: $("email").value.trim(),
+    password: $("password").value
+  });
+
+  if (error) {
+    $("message").textContent = "შესვლა ვერ მოხერხდა. შეამოწმე მონაცემები.";
+    return;
+  }
+
+  await checkAdmin(data.user);
+});
+
+$("logoutBtn").addEventListener("click", async () => {
+  await supabase.auth.signOut();
+  resetForm();
+  showLogin("ანგარიშიდან გამოხვედი.");
+});
+
+const { data: { session } } = await supabase.auth.getSession();
+
+if (session?.user) {
+  await checkAdmin(session.user);
+} else {
+  showLogin();
+}
+</script>
+</body>
+</html>
